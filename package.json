@@ -38,7 +38,7 @@
   },
 
   "scripts": {
-    "prepublish": "make generatejs"
+    "prepublish": "make generate-js"
   },
 
   "preferGlobal": false,

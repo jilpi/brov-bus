@@ -1,24 +1,32 @@
-# Dependencies
+# Module description
+# Exports a single anonymous class (internally named BrovBus)
+# This class offers methods to 1) create a bus (zmq currently supported, events is next),
+# 2) add subscribers and publishers to that bas.
+# It also defines a standard "Publisher" class, that offer an abstraction layer
+# between publishers and the bus' underlaying librairy, by exposing a standard 
+# send(class, content) method.
 
-#Define the BrovBus class
-#  Objects of the BrovBus class expose those methods:
-#    registerSubscriber(callback, filters)
-#      callback(msg) --> function launched when a message matching the filters is received
-#      filters --> ["FILTER1", "FILTER2"] - if set, the Subscriber will only receive messages starting with FILTER1 or FILTER2
-#      returns nothing
-#    registerPublisher()
-#      returns an object that exposes the method
-#        send(class, content)
+# Dependencies
+# zmq is required if 'zmq' provided as busType at object's creation.
+
+# BrovBus class definition
+# Objects of the BrovBus class expose those methods:
+#  registerSubscriber(callback, filters)
+#    callback(msg) --> function launched when a message matching the filters is received
+#    filters --> ["FILTER1", "FILTER2", ...] - if set, the Subscriber will only receive 
+#                                              messages starting with FILTER1 or FILTER2
+#    returns nothing
+#  registerPublisher()
+#    returns an object that exposes the method
+#      send(class, content)
 
 class BrovBus
   @busType = undefined
   @busName = undefined
   
   constructor: (busType, busName, options) ->
-    if !busType?
-      throw new Error 'brov-bus.constructor: busType argument is missing'
-    if !busName?
-      throw new Error 'brov-bus.constructor: busName argument is missing'
+    throw new Error 'brov-bus.constructor: busType argument is missing' if !busType?
+    throw new Error 'brov-bus.constructor: busName argument is missing' if !busName?
 
     console.log "Instancing new Brov-Bus #{busName}"
     @busName=busName
@@ -52,8 +60,7 @@ class BrovBus
   # /constructor
 
   registerSubscriber: (callback, filters) ->
-    if !callback?
-      throw new Error "registerSubscriber: callback argument is missing"
+    throw new Error "registerSubscriber: callback argument is missing" if !callback?
     
     console.log "Registering a new subscriber on #{@busName}, filters set to #{JSON.stringify(filters)}"
     
@@ -66,6 +73,7 @@ class BrovBus
         
         if !filters?
           # If no filters provided, listen to all
+          # (necessary; if no filter is specified, zmq subscribers listen to nothing)
           subscriber.subscribe('')
         else
           # Otherwise, apply corresponding filters
@@ -115,8 +123,8 @@ class BrovBus
         
       when 'events'
         throw new Error("registerSubscriber / events - NOT IMPLEMENTED")
-        pub = new (events.EventEmitter)
-        publisher._setPublisher pub
+        #pub = new (events.EventEmitter)
+        #publisher._setPublisher pub
       
       else
         throw new Error("Internal error")
@@ -125,4 +133,5 @@ class BrovBus
   # /registerPublisher
 
 
+# Export anonymous prototype
 module.exports = BrovBus

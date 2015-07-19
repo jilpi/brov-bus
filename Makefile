@@ -24,4 +24,5 @@ link: generate-js
 
 dev: generate-js
 	@coffee -wc -o lib src/lib/*.coffee
-#	@coffee -wc --no-wrap -o lib src/lib/*.coffee
+
+.PHONY: all
