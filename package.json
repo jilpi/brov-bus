@@ -1,0 +1,48 @@
+{
+  "name": "@jilpi/brov-bus",
+  "version": "0.1.0",
+  "description": "A module providing an asynchronous, anonymous bus using a pub-sub pattern to the BlueROV",
+  "author": "Jean-Laurent Picard <jean.laurent.picard@gmail.com>",
+  "homepage": "http://jilpi.github.io/",
+
+  "engines": {
+    "node": "*"
+  },
+
+  "main": "lib/brov-bus.js",
+  
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jilpi/brov-bus"
+  },
+  
+  "bugs": {
+    "url": "https://github.com/jilpi/brov-bus/issues"
+  },
+  
+  "keywords": [
+    "bluerov",
+    "bluerobotics",
+    "pub-sub",
+    "rov",
+    "bus"
+  ],
+  
+  "dependencies": {
+    "events": "*",
+    "zmq": "*"
+  },
+  
+  "devDependencies": {
+    "coffee-script": "*"
+  },
+
+  "scripts": {
+    "prepublish": "make generatejs"
+  },
+
+  "preferGlobal": false,
+  "private": false,
+  
+  "license": "GPL-3.0"
+}
