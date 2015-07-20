@@ -12,13 +12,8 @@
 # BrovBus class definition
 # Objects of the BrovBus class expose those methods:
 #  registerSubscriber(callback, filters)
-#    callback(msg) --> function launched when a message matching the filters is received
-#    filters --> ["FILTER1", "FILTER2", ...] - if set, the Subscriber will only receive 
-#                                              messages starting with FILTER1 or FILTER2
-#    returns nothing
 #  registerPublisher()
-#    returns an object that exposes the method
-#      send(class, content)
+
 
 class BrovBus
   @busType = undefined
@@ -59,6 +54,18 @@ class BrovBus
     return
   # /constructor
 
+  
+  # registerSubscriber(callback, filters)
+  #  async function that will bind a callback function to a subscriber on the bus.
+  #    Arguments:
+  #      callback(err, filter, message) --> function launched when a message matching the filters is received
+  #      filters --> optional; string, or array of string.
+  #          eg. ["FILTER1", "FILTER2", ...] - the Subscriber only receives messages of the 
+  #                                              filter FILTER1 or FILTER2
+  #          eg. "FILTER3" - the Subscriber only receives messages of the filter FILTER3
+  #          eg. /omitted/ or undefined - the Subscriber will receive all messages sent to the bus
+  #
+  #    returns nothing
   registerSubscriber: (callback, filters) ->
     throw new Error "registerSubscriber: callback argument is missing" if !callback?
     
@@ -78,9 +85,20 @@ class BrovBus
         else
           # Otherwise, apply corresponding filters
           subscriber.subscribe filter for filter in filters
+
+        #zmqcallback(msg)
+        # Defines a callback suitable for zmq's subscriber .on aync method.
+        # It parses the msg and calls the callback provbided in argument, following BrovBus API.
+        zmqcallback = (msg) ->
+          err = null
+          splittedMsg = msg.toString().split(' ')
+          err = new Error "(BrovBus.registerSubscriber - zmqcallback) - incorrect zmq message (no space or empty)" if splittedMsg.length < 2
+          filter = splittedMsg[0]
+          message = splittedMsg.slice(1).join(' ')
+          callback(err, filter, message)
         
         # register Subscriber with Async callback
-        subscriber.on('message', callback)
+        subscriber.on('message', zmqcallback)
         
       when 'events'
         throw new Error("registerSubscriber / events - NOT IMPLEMENTED")
@@ -92,8 +110,9 @@ class BrovBus
   # /registerSubscriber
   
   
-  # registerPublisher
-  #   returns a Publisher object that exposes a .send(msg) method.
+  # registerPublisher()
+  #  returns an object that exposes the method
+  #      send(filter, message)
   registerPublisher: () ->
     # Prototype of the object that will be returned
     # _publisher contains the publisher object provided by the choosen librairy
