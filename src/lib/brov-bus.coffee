@@ -1,45 +1,72 @@
-# Module description
-# Exports a single anonymous class (internally named BrovBus)
-# This class offers methods to 1) create a bus (zmq currently supported, events is next),
-# 2) add subscribers and publishers to that bas.
-# It also defines a standard "Publisher" class, that offer an abstraction layer
-# between publishers and the bus' underlaying librairy, by exposing a standard 
-# send(class, content) method.
+###
+Abstraction layer between the Publisher using the bus and the underlying librariry
 
-# Dependencies
-# zmq is required if 'zmq' provided as busType at object's creation.
-
-# BrovBus class definition
-# Objects of the BrovBus class expose those methods:
-#  registerSubscriber(callback, filters)
-#  registerPublisher()
-
-
-class BrovBus
-  @busType = undefined
-  @busName = undefined
+@author Jean-Laurent Picard <jean.laurent.picard at gmail>
+###
+class Publisher
+  get = (props) => @::__defineGetter__ name, getter for name, getter of props
+  #set = (props) => @::__defineSetter__ name, setter for name, setter of props
   
-  constructor: (busType, busName, options) ->
-    throw new Error 'brov-bus.constructor: busType argument is missing' if !busType?
-    throw new Error 'brov-bus.constructor: busName argument is missing' if !busName?
+  # @property [Object] contains the publisher instance provided by the underlying messaging librairy
+  _publisher: {}
+  
+  # @property [Object] contains the messaging librairy instance. 
+  _messagingLibrary: {}
 
-    console.log "Instancing new Brov-Bus #{busName}"
-    @busName=busName
+  ###
+  Takes the intended message and corresponding filter, and sends then to the bus using the selected underlying library.
+
+  Defined by {BrovBus.getPublisher}
+
+@abstract 
+  @param filter [string] Filter sent together with the message
+  @param message [String] The message itself
+  ###
+  _send: (filter, message) ->
+
+
+  # @property [Function] Getter and setter for the _send(filter, message) function
+  get send: -> @_send
+
+###
+The class create a bus using an underlying library (zmq currently supported, 
+events is next), and expose methods to  bind publishers / subscribers to that
+bus. It also defines a standard {Publisher} class, that offer an abstraction layer
+between publishers and the bus' underlying librairy, by exposing a standard 
+send(class, content) method. Different underlying librairy will expose different
+{Publisher} class.
+
+@author Jean-Laurent Picard <jean.laurent.picard at gmail>
+###
+module.exports = class BrovBus
+  # @property [Object] Underlying librariy. 'zmq' by default.
+  busType: ''
+  # @property [Object] May be used in the logs. 'BrovBus_defaultName' by default.
+  busName: ''
+  
+  ###
+  @example Create a bus using zmq as the underlying librairy
+    bus = new BrovBus('zmq', 'ZmqBus', {zmqUri: 'inprocess://communicationBus'})
+ 
+  @param busType [String] Underlying librariy. Only 'zmq' is valid. 'zmq' by default.
+  @param busName [String] May be used in the logs. 'BrovBus_defaultName' by default.
+  @param options [Object] Different busType may take different options.
+  @option options zmqUri [String] uri used by zmq's socket.bind(uri, callback) function (eg. "inprocess://name",
+    "tcp://127.0.0.1:5000", "icp:///tmp/feed", etc.)
+  ###
+  constructor: (@busType = 'zmq', @busName = 'BrovBus_defaultName', options = {}) ->
+    console.log "Instancing new Brov-Bus (#{@busName})"
     
     console.log "...Selecting bus type"
     console.log("......Options provided: #{JSON.stringify(options)}") if options?
 
-    # If not specified, default type is 'zmq'
-    switch busType
-      when 'zmq', undefined
-        # zmq is only instanciated if required
-        @zmq = require('zmq')
-        @busType = 'zmq'
+    switch @busType
+      when 'zmq'
+        # zmq is only instantiated if required
+        @_messagingLibrary = require('zmq')
         @zmqUri = "inproc://bluerovqueue"
 
-        # load options if provided
-        if options?
-          @zmqUri = options["zmqUri"] if options["zmqUri"]?
+        @zmqUri = options["zmqUri"] if options["zmqUri"]?
         console.log "......(zmqUri set to #{@zmqUri})"
 
       when 'events'
@@ -54,18 +81,19 @@ class BrovBus
     return
   # /constructor
 
-  
-  # registerSubscriber(callback, filters)
-  #  async function that will bind a callback function to a subscriber on the bus.
-  #    Arguments:
-  #      callback(err, filter, message) --> function launched when a message matching the filters is received
-  #      filters --> optional; string, or array of string.
-  #          eg. ["FILTER1", "FILTER2", ...] - the Subscriber only receives messages of the 
-  #                                              filter FILTER1 or FILTER2
-  #          eg. "FILTER3" - the Subscriber only receives messages of the filter FILTER3
-  #          eg. /omitted/ or undefined - the Subscriber will receive all messages sent to the bus
-  #
-  #    returns nothing
+  ###
+  @overload registerSubscriber(callback, filters)
+    Binds a callback function to a subscriber on the bus. The callback is called only if the message's filter 
+    matches one of those provided in an Array as argument.
+    @param callback [Function] callback(Error, filter[String], message[String])
+    @param filters [Array<String>] filter eg. ["FILTER1", "FILTER2", ...]
+
+  @overload registerSubscriber(callback, filter)
+    Binds a callback function to a subscriber on the bus. The callback is called only if the message's filter 
+    matches the filter provided as argument.
+    @param callback [Function] callback(Error, filter[String], message[String])
+    @param filter [String] filter eg. "FILTER3". NB: if set to undefined: the Subscriber will receive all messages sent to the bus
+  ###
   registerSubscriber: (callback, filters) ->
     throw new Error "registerSubscriber: callback argument is missing" if !callback?
     
@@ -74,7 +102,7 @@ class BrovBus
     switch @busType
       when 'zmq'
         # Create a new subscriber socket
-        subscriber = @zmq.socket("sub")
+        subscriber = @_messagingLibrary.socket("sub")
         # Connect to the specified URI
         subscriber.connect(@zmqUri)
         
@@ -110,34 +138,26 @@ class BrovBus
   # /registerSubscriber
   
   
-  # registerPublisher()
-  #  returns an object that exposes the method
-  #      send(filter, message)
-  registerPublisher: () ->
-    # Prototype of the object that will be returned
-    # _publisher contains the publisher object provided by the choosen librairy
-    # .send method takes two arguments (filter, message), and does whatever is required to send them through _publisher
-    # both _publisher and .send(filter, message) are to be set by _setPublisher and _setSend respectively
-    class Publisher
-      @_publisher = undefined
-      
-      _setPublisher: (@_publisher) ->
-      _setSend: (@send) ->
-      
-      @send: (filter, message) ->
-
+  ###
+  Returns a Publisher object that exposes the method send(filter, message). The send method will
+  be overchared depending on the selected underlying messaging librairy (see [BrovBus] class)
+  
+  @return [Publisher] Class offering an abstraction layer to the underlying messaging librairy
+  ###
+  getPublisher: () ->
     # Instanciate a new publisher (return value)
     publisher = new Publisher
 
     switch @busType
       when 'zmq'
         # Creates a standard ZMQ publisher and binds it to @zmqUri
-        pub = @zmq.socket("pub")
-        pub.bind(@zmqUri, -> (throw err if err?))
+        zmqPub = @_messagingLibrary.socket("pub")
+        zmqPub.bind(@zmqUri, -> (throw err if err?))
         
         # set _publisher and .send(filter, message) of the publisher object
-        publisher._setPublisher pub
-        publisher._setSend (filter, message) ->
+        publisher._publisher = zmqPub
+
+        publisher._send = (filter, message) ->
           @_publisher.send "#{filter} #{message}"
         
       when 'events'
@@ -146,11 +166,7 @@ class BrovBus
         #publisher._setPublisher pub
       
       else
-        throw new Error("Internal error")
+        throw new Error("Unknown bus type (#{@busType})")
 
     return publisher
   # /registerPublisher
-
-
-# Export anonymous prototype
-module.exports = BrovBus

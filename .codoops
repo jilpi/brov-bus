@@ -1,0 +1,8 @@
+--name       "BROV Bus"
+--readme     README.md
+--title      "BROV Bus Documentation"
+--private
+--quiet
+--extension  coffee
+--output     ./doc
+./src
