@@ -1,5 +1,5 @@
 ###
-Abstraction layer between the Publisher using the bus and the underlying librariry
+Abstraction layer between the Publisher using the bus and the underlying library.
 
 @author Jean-Laurent Picard <jean.laurent.picard at gmail>
 ###
