@@ -31,10 +31,11 @@ sudo apt-get install libzmq3-dev
 
 ##Usage##
 ```coffee
+# //usage.js
 Bus = require('@jilpi/brov-bus')
 
 # Create a new bus
-bus = new Bus 'zmq', 'blueROV-bus'
+bus = new Bus 'zmq'
 
 # Create and bind a publisher
 publisher = bus.getPublisher()
@@ -46,7 +47,10 @@ subscriberCallback = (err, filter, message)->
 
 bus.registerSubscriber subscriberCallback
 
-pub.send("FOO", "BAR")
+publisher.send("FOO", "BAR")
+```
+```bash
+node usage.js
 # Message received! Contains: BAR (filter was: FOO)
 ```
 
@@ -72,10 +76,13 @@ Under development:
 Documentation is generated automatically with [codo][codo] and can be found in the
 /doc folder of the repository.
 
-You can check it here thanks to Rawgit: https://cdn.rawgit.com/jilpi/brov-bus/master/doc/index.html
+You can also check it online [here][doc] thanks to [Rawgit][rawgit].
+
 
 [codo]: https://github.com/coffeedoc/codo
 [zmq]: http://zeromq.org/
 [events]: https://nodejs.org/api/events.html
 [bluerov]: http://docs.bluerobotics.com/bluerov/
 [brov-app]: https://github.com/jilpi/brov-app
+[doc]: https://cdn.rawgit.com/jilpi/brov-bus/master/doc/index.html
+[rawgit]: http://www.rawgit.com/
