@@ -50,8 +50,8 @@ bus.registerSubscriber subscriberCallback
 publisher.send("FOO", "BAR")
 ```
 ```bash
-node usage.js
-# Message received! Contains: BAR (filter was: FOO)
+$ node usage.js
+Message received! Contains: BAR (filter was: FOO)
 ```
 
 ##Principle##
