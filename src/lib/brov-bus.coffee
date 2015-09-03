@@ -60,18 +60,19 @@ module.exports = class BrovBus
     console.log "...Selecting bus type"
     console.log("......Options provided: #{JSON.stringify(options)}") if options?
 
+    # Set @_messagingLibrary and other instance variables as necessary
     switch @busType
       when 'zmq'
         # zmq is only instantiated if required
         @_messagingLibrary = require('zmq')
-        @zmqUri = "inproc://bluerovqueue"
 
+        @zmqUri = "inproc://bluerovqueue"
         @zmqUri = options["zmqUri"] if options["zmqUri"]?
         console.log "......(zmqUri set to #{@zmqUri})"
 
       when 'events'
-        @busType = 'events'
-        throw new Error("busType events - NOT IMPLEMENTED YET")
+        @_messagingLibrary = require('events')
+        #throw new Error("busType events - NOT IMPLEMENTED YET")
 
       else
         throw new Error 'brov-bus.constructor: unknown bus type (#{@busType})'
@@ -129,8 +130,10 @@ module.exports = class BrovBus
         subscriber.on('message', zmqcallback)
         
       when 'events'
-        throw new Error("registerSubscriber / events - NOT IMPLEMENTED")
-      
+        #throw new Error("registerSubscriber / events - NOT IMPLEMENTED")
+        # Create a new subscriber socket
+        subscriber = @_messagingLibrary.
+        
       else
         throw new Error("Internal error")
         
