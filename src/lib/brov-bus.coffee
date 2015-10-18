@@ -132,7 +132,7 @@ module.exports = class BrovBus
       when 'events'
         #throw new Error("registerSubscriber / events - NOT IMPLEMENTED")
         # Create a new subscriber socket
-        subscriber = @_messagingLibrary.
+        subscriber = @_messagingLibrary
         
       else
         throw new Error("Internal error")
