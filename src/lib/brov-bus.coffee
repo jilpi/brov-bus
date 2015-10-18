@@ -164,9 +164,9 @@ module.exports = class BrovBus
           @_publisher.send "#{filter} #{message}"
         
       when 'events'
-        throw new Error("registerSubscriber / events - NOT IMPLEMENTED")
-        #pub = new (events.EventEmitter)
-        #publisher._setPublisher pub
+        #throw new Error("registerSubscriber / events - NOT IMPLEMENTED")
+        pub = new (events.EventEmitter)
+        publisher._setPublisher pub
       
       else
         throw new Error("Unknown bus type (#{@busType})")

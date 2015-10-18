@@ -1,6 +1,6 @@
 {
   "name": "@jilpi/brov-bus",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A module providing an asynchronous, anonymous bus using a pub-sub pattern to the BlueROV",
   "author": "Jean-Laurent Picard <jean.laurent.picard@gmail.com>",
   "homepage": "http://jilpi.github.io/",
