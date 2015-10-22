@@ -165,7 +165,7 @@ module.exports = class BrovBus
         
       when 'events'
         #throw new Error("registerSubscriber / events - NOT IMPLEMENTED")
-        pub = new (events.EventEmitter)
+        pub = new (@_messagingLibrary.EventEmitter)
         publisher._setPublisher pub
       
       else
